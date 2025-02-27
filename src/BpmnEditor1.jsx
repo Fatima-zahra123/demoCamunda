@@ -8,7 +8,20 @@ import '@bpmn-io/properties-panel/assets/properties-panel.css';
 import { useEffect, useRef } from "react";
 import BpmnModeler from "bpmn-js/lib/Modeler";
 import camundaModdleDescriptor from "camunda-bpmn-moddle/resources/camunda.json";
-import { BpmnPropertiesPanelModule, BpmnPropertiesProviderModule } from 'bpmn-js-properties-panel';
+import {
+    BpmnPropertiesPanelModule,
+    BpmnPropertiesProviderModule,
+    CamundaPlatformPropertiesProviderModule
+} from 'bpmn-js-properties-panel';
+import CustomPropertiesProvider from "./CustomPropertiesProvider2.js";
+import {DebounceInputModule, FeelPopupModule} from "@bpmn-io/properties-panel";
+import DistributeElementsMenuProvider from "bpmn-js/lib/features/distribute-elements/DistributeElementsMenuProvider.js";
+import BpmnSearchProvider from "bpmn-js/lib/features/search/BpmnSearchProvider.js";
+import BpmnAutoResizeProvider from "bpmn-js/lib/features/auto-resize/BpmnAutoResizeProvider.js";
+import magicPropertiesProviderModule from './index.js';
+import magicModdleDescriptor from './descriptors/magic';
+
+
 
 
 const BpmnEditor = ({ xml, onSave }) => {
@@ -19,9 +32,10 @@ const BpmnEditor = ({ xml, onSave }) => {
     useEffect(() => {
         modelerRef.current = new BpmnModeler({
             container: containerRef.current,
-            additionalModules: [BpmnPropertiesPanelModule, BpmnPropertiesProviderModule],
+            additionalModules: [BpmnPropertiesPanelModule, BpmnPropertiesProviderModule,magicPropertiesProviderModule,FeelPopupModule,DebounceInputModule,CamundaPlatformPropertiesProviderModule,DistributeElementsMenuProvider,BpmnSearchProvider,BpmnAutoResizeProvider,CustomPropertiesProvider],
             propertiesPanel: { parent: propertiesPanelRef.current },
-            moddleExtensions: { camunda: camundaModdleDescriptor },
+            moddleExtensions: { camunda: camundaModdleDescriptor,
+                magic: magicModdleDescriptor},
         });
 
         if (xml) {
