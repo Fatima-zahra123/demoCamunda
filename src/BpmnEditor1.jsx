@@ -13,13 +13,14 @@ import {
     BpmnPropertiesProviderModule,
     CamundaPlatformPropertiesProviderModule
 } from 'bpmn-js-properties-panel';
-import CustomPropertiesProvider from "./CustomPropertiesProvider2.js";
 import {DebounceInputModule, FeelPopupModule} from "@bpmn-io/properties-panel";
 import DistributeElementsMenuProvider from "bpmn-js/lib/features/distribute-elements/DistributeElementsMenuProvider.js";
 import BpmnSearchProvider from "bpmn-js/lib/features/search/BpmnSearchProvider.js";
 import BpmnAutoResizeProvider from "bpmn-js/lib/features/auto-resize/BpmnAutoResizeProvider.js";
-import magicPropertiesProviderModule from './index.js';
 import magicModdleDescriptor from './descriptors/magic';
+import magicPropertiesProviderModule from './';
+import formPropertiesProviderModule from './';
+import CustomCamundaPropertiesProvider from "./CustomCamundaPropertiesModeler.js";
 
 
 
@@ -32,7 +33,10 @@ const BpmnEditor = ({ xml, onSave }) => {
     useEffect(() => {
         modelerRef.current = new BpmnModeler({
             container: containerRef.current,
-            additionalModules: [BpmnPropertiesPanelModule, BpmnPropertiesProviderModule,magicPropertiesProviderModule,FeelPopupModule,DebounceInputModule,CamundaPlatformPropertiesProviderModule,DistributeElementsMenuProvider,BpmnSearchProvider,BpmnAutoResizeProvider,CustomPropertiesProvider],
+            additionalModules: [BpmnPropertiesPanelModule, BpmnPropertiesProviderModule,FeelPopupModule,DebounceInputModule,DistributeElementsMenuProvider,BpmnSearchProvider,BpmnAutoResizeProvider,magicPropertiesProviderModule,formPropertiesProviderModule,CamundaPlatformPropertiesProviderModule,{
+                __init__: ['customPropertiesProvider'],
+                customPropertiesProvider: ['type',  CustomCamundaPropertiesProvider]
+            }],
             propertiesPanel: { parent: propertiesPanelRef.current },
             moddleExtensions: { camunda: camundaModdleDescriptor,
                 magic: magicModdleDescriptor},

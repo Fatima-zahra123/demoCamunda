@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" xmlns:magic="http://magic" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" xmlns:camunda="http://camunda.org/schema/1.0/bpmn" id="Definitions_1" targetNamespace="http://bpmn.io/schema/bpmn">
   <bpmn:process id="Process_1" isExecutable="true">
-    <bpmn:startEvent id="StartEvent_1" magic:spell="dgdhgfdfgfdsg">
+    <bpmn:startEvent id="StartEvent_1" camunda:formKey="form1">
       <bpmn:outgoing>Flow_1qjvq6i</bpmn:outgoing>
     </bpmn:startEvent>
     <bpmn:sequenceFlow id="Flow_1qjvq6i" sourceRef="StartEvent_1" targetRef="Activity_0axh3sa" />
@@ -11,7 +11,7 @@
       <bpmn:incoming>Flow_1xrwc9u</bpmn:incoming>
     </bpmn:endEvent>
     <bpmn:sequenceFlow id="Flow_1xrwc9u" sourceRef="Activity_15r9fui" targetRef="Event_0wyiw42" />
-    <bpmn:userTask id="Activity_0axh3sa" camunda:formKey="">
+    <bpmn:userTask id="Activity_0axh3sa" camunda:formKey="hhh" formType="deployment">
       <bpmn:incoming>Flow_1qjvq6i</bpmn:incoming>
       <bpmn:outgoing>Flow_007ovgt</bpmn:outgoing>
     </bpmn:userTask>
