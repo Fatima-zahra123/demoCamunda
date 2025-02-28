@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import BpmnEditor from "./BpmnEditor";
 import axios from "axios";
-import BpmnEditor1 from "./BpmnEditor1.jsx";
+import BpmnEditor1 from "./BpmnEditorwithNodeServer.jsx";
+import BpmnEditorSB from "./BpmnEditorwithSB.jsx";
+import ListBpmnFiles from "./ListBpmnFiles.jsx";
 
 function App() {
     const [bpmnXml, setBpmnXml] = useState("");
@@ -27,7 +29,8 @@ function App() {
     return (
         <div>
             <h1>Éditeur BPMN avec Properties Panel</h1>
-            <BpmnEditor1 xml={bpmnXml} onSave={saveBpmn} />
+            {/*<BpmnEditor1 xml={bpmnXml} onSave={saveBpmn} />*/}
+            <BpmnEditorSB xml={bpmnXml} onSave={saveBpmn}/>
         </div>
     );
 }

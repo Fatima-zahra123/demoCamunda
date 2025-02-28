@@ -13,19 +13,15 @@ import {
     BpmnPropertiesProviderModule,
     CamundaPlatformPropertiesProviderModule
 } from 'bpmn-js-properties-panel';
-import {DebounceInputModule, FeelPopupModule} from "@bpmn-io/properties-panel";
-import DistributeElementsMenuProvider from "bpmn-js/lib/features/distribute-elements/DistributeElementsMenuProvider.js";
-import BpmnSearchProvider from "bpmn-js/lib/features/search/BpmnSearchProvider.js";
-import BpmnAutoResizeProvider from "bpmn-js/lib/features/auto-resize/BpmnAutoResizeProvider.js";
 import magicModdleDescriptor from './descriptors/magic';
 import magicPropertiesProviderModule from './';
-import formPropertiesProviderModule from './';
-import CustomCamundaPropertiesProvider from "./CustomCamundaPropertiesModeler.js";
+import {createBpmnFileFromXml} from "./service/bpmnService.jsx";
 
 
 
 
-const BpmnEditor = ({ xml, onSave }) => {
+
+const BpmnEditorSB = ({ xml, onSave}) => {
     const containerRef = useRef(null);
     const propertiesPanelRef = useRef(null);
     const modelerRef = useRef(null);
@@ -33,10 +29,7 @@ const BpmnEditor = ({ xml, onSave }) => {
     useEffect(() => {
         modelerRef.current = new BpmnModeler({
             container: containerRef.current,
-            additionalModules: [BpmnPropertiesPanelModule, BpmnPropertiesProviderModule,FeelPopupModule,DebounceInputModule,DistributeElementsMenuProvider,BpmnSearchProvider,BpmnAutoResizeProvider,magicPropertiesProviderModule,formPropertiesProviderModule,CamundaPlatformPropertiesProviderModule,{
-                __init__: ['customPropertiesProvider'],
-                customPropertiesProvider: ['type',  CustomCamundaPropertiesProvider]
-            }],
+            additionalModules: [BpmnPropertiesPanelModule, BpmnPropertiesProviderModule,CamundaPlatformPropertiesProviderModule],
             propertiesPanel: { parent: propertiesPanelRef.current },
             moddleExtensions: { camunda: camundaModdleDescriptor,
                 magic: magicModdleDescriptor},
@@ -53,7 +46,11 @@ const BpmnEditor = ({ xml, onSave }) => {
     const handleSave = async () => {
         try {
             const { xml } = await modelerRef.current.saveXML({ format: true });
-            onSave(xml);
+                onSave(xml);
+            const name = "example.bpmn"; // Replace with actual name
+            const description = "exampleDescription"; // Replace with actual description
+            const response = await createBpmnFileFromXml(name, description, xml);
+            console.log('BPMN File created:', response);
         } catch (error) {
             console.error("Erreur lors de l'enregistrement", error);
         }
@@ -75,4 +72,4 @@ const BpmnEditor = ({ xml, onSave }) => {
     );
 };
 
-export default BpmnEditor;
+export default BpmnEditorSB;
