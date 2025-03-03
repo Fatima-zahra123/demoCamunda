@@ -1,6 +1,10 @@
 import React, { useEffect, useRef } from 'react';
 import BpmnModeler from 'camunda-bpmn-js/lib/camunda-platform/Modeler';
 import 'camunda-bpmn-js/dist/assets/camunda-platform-modeler.css';
+import 'diagram-js-minimap/assets/diagram-js-minimap.css';
+import 'bpmn-js/dist/assets/diagram-js.css';
+import camundaPlatformBehaviors from 'camunda-bpmn-js-behaviors/lib/camunda-platform';
+
 import {
     BpmnPropertiesPanelModule,
     BpmnPropertiesProviderModule,
@@ -18,7 +22,7 @@ const CamundaEditor = () => {
     useEffect(() => {
         modelerRef.current = new BpmnModeler({
             container: containerRef.current,
-            additionalModules: [minimapModule,BpmnPropertiesPanelModule, BpmnPropertiesProviderModule,CamundaPlatformPropertiesProviderModule,CamundaPlatformTooltipProvider],
+            additionalModules: [minimapModule,BpmnPropertiesPanelModule, BpmnPropertiesProviderModule,CamundaPlatformPropertiesProviderModule,CamundaPlatformTooltipProvider,camundaPlatformBehaviors],
             propertiesPanel: { parent: propertiesPanelRef.current },
             moddleExtensions: { camunda: camundaModdleDescriptor,
                 magic: magicModdleDescriptor},

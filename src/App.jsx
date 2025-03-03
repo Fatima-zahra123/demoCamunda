@@ -16,7 +16,7 @@ function App() {
                         </Link>
                     </nav>
                 </header>
-                <div className="container mx-auto p-6">
+                <div className="container mx-auto p-6 min-h-screen">
                     <Routes>
                         <Route path="/" element={<MainPage />} />
                         <Route path="/create" element={<BpmnEditorForm />} />
