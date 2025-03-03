@@ -29,7 +29,7 @@ const ListBpmnFiles = () => {
     };
 
     const handleEdit = (file) => {
-        navigate('/bpmn-editor-with-sb', { state: { info: file } });
+        navigate('/camunda', { state: { info: file } });
     };
 
     return (

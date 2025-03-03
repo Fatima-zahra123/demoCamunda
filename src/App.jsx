@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Route, Routes, Link } from "react-router-dom";
 import ListBpmnFiles from "./ListBpmnFiles";
-import BpmnEditorForm from "./BpmnEditorForm";
-import BPMNEditorWithSB from "./BPMNEditorWithSB";
+import BpmnEditorForm from "./BpmnEditorForm.jsx";
+import BPMNEditorWithSB from "./BpmnEditors/BpmnEditorwithSB.jsx";
 import CamundaEditor from "./camundaEditor.jsx";
 
 function App() {
@@ -16,7 +16,7 @@ function App() {
                         </Link>
                     </nav>
                 </header>
-                <div className="container mx-auto p-6 min-h-screen">
+                <div className="container mx-auto p-6 min-h-screen ">
                     <Routes>
                         <Route path="/" element={<MainPage />} />
                         <Route path="/create" element={<BpmnEditorForm />} />

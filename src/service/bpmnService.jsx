@@ -4,9 +4,9 @@ import axios from "axios";
 
 const API_URL = 'http://localhost:8092/api/bpmn-files';
 
-const createBpmnFileFromXml = async (name, description, xmlContent) => {
+const createBpmnFileFromXml = async (name, description, xmlContent,codeProcess) => {
     const response = await axios.post(`${API_URL}/create2`, null, {
-        params: { name, description, xmlContent }
+        params: { name, description, xmlContent,codeProcess }
     });
     return response.data;
 };
