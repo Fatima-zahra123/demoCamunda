@@ -13,8 +13,8 @@ import {
     BpmnPropertiesProviderModule,
     CamundaPlatformPropertiesProviderModule
 } from 'bpmn-js-properties-panel';
-import magicModdleDescriptor from './descriptors/magic';
-import magicPropertiesProviderModule from './';
+import magicModdleDescriptor from '../descriptors/magic.json';
+import magicPropertiesProviderModule from '../index.js';
 
 
 

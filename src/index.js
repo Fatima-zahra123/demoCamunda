@@ -1,5 +1,5 @@
 import MagicPropertiesProvider from './MagicPropertiesProvider';
-import FormPropertiesProvider from "./FormPropertiesProvider2.js";
+import FormPropertiesProvider from "./Providers/FormPropertiesProvider2.js";
 
 
 export default [{

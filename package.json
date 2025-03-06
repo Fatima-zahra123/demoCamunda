@@ -10,6 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@bpmn-io/form-js": "^1.14.0",
+    "@bpmn-io/form-js-editor": "^1.14.0",
+    "@bpmn-io/form-js-viewer": "^1.14.0",
     "@bpmn-io/properties-panel": "^3.26.3",
     "axios": "^1.8.1",
     "bpmn-js": "^18.3.1",

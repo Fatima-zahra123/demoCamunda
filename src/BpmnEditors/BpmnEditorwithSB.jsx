@@ -13,9 +13,9 @@ import {
     BpmnPropertiesProviderModule,
     CamundaPlatformPropertiesProviderModule, CamundaPlatformTooltipProvider
 } from 'bpmn-js-properties-panel';
-import magicModdleDescriptor from './descriptors/magic';
-import magicPropertiesProviderModule from './';
-import {createBpmnFileFromXml,updateBpmnFileFromXml} from "./service/bpmnService.jsx";
+import magicModdleDescriptor from '../descriptors/magic.json';
+import magicPropertiesProviderModule from '../index.js';
+import {createBpmnFileFromXml,updateBpmnFileFromXml} from "../service/bpmnService.jsx";
 import {useLocation} from "react-router-dom";
 
 

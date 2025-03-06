@@ -1,7 +1,7 @@
 // Import your custom property entries.
 // The entry is a text input field with logic attached to create,
 // update and delete the "spell" property.
-import spellProps from './parts/FormKeyProps.js';
+import spellProps from '../parts/FormKeyProps.js';
 
 import { is } from 'bpmn-js/lib/util/ModelUtil';
 

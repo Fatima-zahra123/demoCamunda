@@ -3,6 +3,10 @@ import ListBpmnFiles from "./ListBpmnFiles";
 import BpmnEditorForm from "./BpmnEditorForm.jsx";
 import BPMNEditorWithSB from "./BpmnEditors/BpmnEditorwithSB.jsx";
 import CamundaEditor from "./camundaEditor.jsx";
+import {useState} from "react";
+import FormEditorComponent from "./Forms/FormEditor.jsx";
+import FormsEditor from "./FormsEditor.jsx";
+import FormViewer from "./Forms/FormViewer.jsx";
 
 function App() {
     return (
@@ -22,6 +26,9 @@ function App() {
                         <Route path="/create" element={<BpmnEditorForm />} />
                         <Route path="/bpmn-editor-with-sb" element={<BPMNEditorWithSB />} />
                         <Route path="/camunda" element={<CamundaEditor />} />
+                        <Route path="/form" element={<FormEditorComponent />} />
+                        <Route path="/forms" element={<FormsEditor />} />
+                        <Route path="/form-viewer" element={<FormViewer />} />
                     </Routes>
                 </div>
             </div>
@@ -35,6 +42,11 @@ function MainPage() {
             <Link to="/create">
                 <button className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded shadow-md mb-6">
                     Créer un nouveau processus
+                </button>
+            </Link>
+            <Link to="/forms">
+                <button className="bg-amber-800 hover:bg-green-600 text-white py-2 px-4 rounded shadow-md mb-6 ml-2">
+                    Créer un nouveau formulaire
                 </button>
             </Link>
             <ListBpmnFiles />

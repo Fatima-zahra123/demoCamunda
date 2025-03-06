@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 const BpmnEditorForm = () => {
     const [name, setName] = useState('');
     const [description, setDescription] = useState('');
+    const [code, setCode] = useState('');
     const navigate = useNavigate();
 
     const options = [
@@ -14,13 +15,13 @@ const BpmnEditorForm = () => {
     const info ={
         name: name,
         description: description,
-        code:''
+        code:code
 
     };
 
     const handleNext = () => {
-        const info = { name, description };
-        navigate('/bpmn-editor-with-sb', { state: { info } });
+        console.log('Objet:', info);
+        navigate('/camunda', { state: { info } });
     };
     return (
       <>
@@ -34,9 +35,9 @@ const BpmnEditorForm = () => {
                     value={name}
                     onChange={(e) => {
                         const selectedOption = options.find(option => option.nomProcess === e.target.value);
-                        info.code = selectedOption.code;
                         setName(e.target.value);
-                        console.log('Objet sélectionné:', selectedOption);
+                        setCode(selectedOption.code);
+
                     }}
                     className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                     required

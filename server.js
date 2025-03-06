@@ -5,7 +5,7 @@ import fs from "fs/promises"; // Utiliser la version asynchrone de fs
 const app = express();
 const PORT = 5000;
 const BPMN_FILE_PATH = "./public/example.bpmn";
-
+const JSON_FILE_PATH = "./public/schema.json";
 app.use(cors());
 app.use(express.json());
 
@@ -28,6 +28,18 @@ app.post("/save-bpmn", async (req, res) => {
     } catch (err) {
         res.status(500).send("Erreur lors de l'enregistrement du fichier BPMN");
     }
+});
+
+
+app.post("/save-schema", async (req, res) => {
+    const {json } = req.body;
+    try {
+        await fs.writeFile(JSON_FILE_PATH, json, "utf8");
+        res.send("Fichier BPMN enregistré avec succès !");
+    } catch (err) {
+        res.status(500).send("Erreur lors de l'enregistrement du fichier BPMN");
+    }
+
 });
 
 app.listen(PORT, () => {
