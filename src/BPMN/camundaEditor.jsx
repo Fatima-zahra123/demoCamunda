@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import BpmnModeler from 'camunda-bpmn-js/lib/camunda-platform/Modeler';
 import 'camunda-bpmn-js/dist/assets/camunda-platform-modeler.css';
 import 'diagram-js-minimap/assets/diagram-js-minimap.css';
@@ -10,28 +10,44 @@ import {
     BpmnPropertiesProviderModule,
     CamundaPlatformPropertiesProviderModule, CamundaPlatformTooltipProvider
 } from "bpmn-js-properties-panel";
-import magicModdleDescriptor from "./descriptors/magic.json";
+import magicModdleDescriptor from "../descriptors/magic.json";
 import camundaModdleDescriptor from "camunda-bpmn-moddle/resources/camunda.json";
 import minimapModule from 'diagram-js-minimap';
-import {useLocation} from "react-router-dom";
-import {createBpmnFileFromXml, updateBpmnFileFromXml} from "./service/bpmnService.jsx";
+import {useLocation, useNavigate} from "react-router-dom";
+import {createBpmnFileFromXml, updateBpmnFileFromXml} from "../service/bpmnService.jsx";
 
 const CamundaEditor = () => {
     const containerRef = useRef(null);
     const modelerRef = useRef(null);
     const propertiesPanelRef = useRef(null);
+
+    // 🔹 Charger formData depuis localStorage
+    const storedFormData = JSON.parse(localStorage.getItem("formData")) || {};
+
+    // 🔹 Utiliser formData pour définir les valeurs par défaut
     const location = useLocation();
     const { info } = location.state || {};
-    const xml = info?.content || null;
-    const processName = info?.name || "defaultName";
-    const sanitizedProcessName = processName.replace(/[^a-zA-Z0-9._-]/g, '_'); // Replace invalid QName characters with underscores
-    const [isCreated, setIsCreated] = useState(false);
-    const [bpmnFileId, setBpmnFileId] = useState(null); // State to store the BPMN file ID
-    console.log('info:', info); // Debug log
+    const savedXml = localStorage.getItem("bpmnXml"); // Récupérer le XML BPMN stocké
+    const xml = info ? info.content : savedXml;
+    const processName = storedFormData.process || "defaultName";
+    const sanitizedProcessName = processName.replace(/[^a-zA-Z0-9._-]/g, '_'); // Nettoyer le nom
+
+    const [isCreated, setIsCreated] = useState(() => {
+        return JSON.parse(localStorage.getItem("isCreated")) || false;});
+    const [bpmnFileId, setBpmnFileId] = useState(() => {
+        return JSON.parse(localStorage.getItem("BpmnId")) || null;});
+
+
+    const [verisValid, setVerisValid] = useState(false);
+
+    const navigate=useNavigate();
+
+
     useEffect(() => {
         modelerRef.current = new BpmnModeler({
             container: containerRef.current,
-            additionalModules: [minimapModule,BpmnPropertiesPanelModule, BpmnPropertiesProviderModule,CamundaPlatformPropertiesProviderModule,CamundaPlatformTooltipProvider,camundaPlatformBehaviors],
+            additionalModules: [
+                minimapModule,BpmnPropertiesPanelModule, BpmnPropertiesProviderModule,CamundaPlatformPropertiesProviderModule,CamundaPlatformTooltipProvider,camundaPlatformBehaviors],
             propertiesPanel: { parent: propertiesPanelRef.current },
             moddleExtensions: { camunda: camundaModdleDescriptor,
                 magic: magicModdleDescriptor},
@@ -40,16 +56,15 @@ const CamundaEditor = () => {
         const importXml = async () => {
             try {
                 if (xml) {
-                    setIsCreated(true);
-                    setBpmnFileId(info?.id);
                     await modelerRef.current.importXML(xml);
                 } else {
                     await modelerRef.current.createDiagram();
                     setTTL();
                 }
 
+                // 🔹 Écouter les modifications du diagramme
+
             } catch (err) {
-                console.error("Erreur d'import ou de création du diagramme", err);
             }
         };
 
@@ -57,6 +72,7 @@ const CamundaEditor = () => {
             const elementRegistry = modelerRef.current.get('elementRegistry');
             const modeling = modelerRef.current.get('modeling');
             const processElement = elementRegistry.get('Process_1'); // Adjust the ID as needed
+            console.log(elementRegistry)
             if (processElement) {
                 modeling.updateProperties(processElement, {
                     'camunda:historyTimeToLive': 180,
@@ -67,12 +83,16 @@ const CamundaEditor = () => {
             }
         };
 
+
+
         importXml();
 
         return () => {
             modelerRef.current.destroy();
         };
     }, [xml]);
+
+
 
     // Function to reset zoom
     const handleZoomReset = () => {
@@ -98,26 +118,39 @@ const CamundaEditor = () => {
 
         try {
             const { xml } = await modelerRef.current.saveXML({ format: true });
-            const name = info.name.toString().trim() + ".bpmn";
-            const description = info.description;
 
+            const name = storedFormData.name;
+            const description = storedFormData.description;
+            const code = storedFormData.code;
             if (!isCreated) {
-                console.log('info:', info.code); // Debug log
-                const response = await createBpmnFileFromXml(name, description, xml,info.code);
+                const response = await createBpmnFileFromXml(name, description, xml,code,verisValid);
+                localStorage.setItem("bpmnXml", xml);
+                localStorage.setItem("isCreated", true);
+                localStorage.setItem("BpmnId", response.id);
                 console.log('BPMN File created:', response);
                 setIsCreated(true);
                 setBpmnFileId(response.id); // Store the created BPMN file ID
             } else {
-                const response = await updateBpmnFileFromXml(bpmnFileId, name, description, xml);
+                console.log(verisValid)
+                const response = await updateBpmnFileFromXml(bpmnFileId, name, description, xml,verisValid);
                 console.log('BPMN File updated:', response);
             }
+            localStorage.setItem("bpmnXml", xml);
         } catch (error) {
             console.error("Erreur lors de l'enregistrement", error);
         }
     };
+
+
+    const handleValidate = async () => {
+        setVerisValid(true);
+        await handleSave();
+
+    };
+
     return (
-        <div style={{ display: "flex", flexDirection: "column", height: "600px" }}>
-            <div className="flex flex-row  justify-around mb-4">
+        <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh"}} className='relative h-sceen'>
+            <div  style={{ display: "flex", flexDirection: "column"}} className="flex flex-column  mb-4 absolute bottom-10 left-3 z-10 ">
                 <button
                     onClick={handleSave}
                     className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded mb-2"
@@ -125,26 +158,40 @@ const CamundaEditor = () => {
                     Enregistrer
                 </button>
                 <button
-                    onClick={handleZoomReset}
-                    className="bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded mb-2"
-                >
-                    Reset Zoom
-                </button>
-                <button
-                    onClick={handleZoomIn}
+                    onClick={handleValidate}
                     className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded mb-2"
                 >
-                    Zoom In
+                    Valider
                 </button>
                 <button
-                    onClick={handleZoomOut}
-                    className="bg-red-500 hover:bg-red-600 text-white py-2 px-4 rounded mb-2"
+                    onClick={()=>{navigate(-1);}}
+                    className="bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded mb-2"
                 >
-                    Zoom Out
+                    Retour
                 </button>
+
             </div>
             <div style={{ display: "flex", flex: 1 }}>
-                <div ref={containerRef} style={{ flex: 3, border: "1px solid #ccc" }} />
+                <div ref={containerRef} style={{ flex: 3, border: "1px solid #ccc" ,position:"relative"}} >
+
+                    <ul className="absolute bottom-10 right-0 m-4 z-10">
+                        <li className="bg-gray-500  text-white   mb-2 text-center py-2 px-4">
+                            <button onClick={handleZoomReset} >
+                               0
+                            </button>
+                        </li>
+                        <li className="bg-gray-500  text-white   mb-2 text-center py-2 px-4">
+                            <button onClick={handleZoomIn} >
+                                +
+                            </button>
+                        </li>
+                        <li className="bg-gray-500  text-white   mb-2 text-center py-2 px-4">
+                            <button onClick={handleZoomOut} >
+                                -
+                            </button>
+                        </li>
+                    </ul>
+                    </div>
                 <div ref={propertiesPanelRef} style={{ flex: 1, border: "1px solid #ccc", padding: "0px", overflow: "auto" }} />
             </div>
         </div>

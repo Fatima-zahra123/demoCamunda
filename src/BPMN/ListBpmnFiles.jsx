@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { getBpmnFiles, deleteBpmnFile } from './service/bpmnService';
-import {useNavigate} from "react-router-dom";
+import { getBpmnFiles, deleteBpmnFile } from '../service/bpmnService.jsx';
+import {Link, useNavigate} from "react-router-dom";
+
+
 
 const ListBpmnFiles = () => {
     const [bpmnFiles, setBpmnFiles] = useState([]);
@@ -29,10 +31,21 @@ const ListBpmnFiles = () => {
     };
 
     const handleEdit = (file) => {
-        navigate('/camunda', { state: { info: file } });
+        navigate('/camunda-editor', { state: { info: file } });
     };
 
+    function handleClick() {
+        localStorage.clear();
+    }
+
     return (
+        <div className="p-4">
+            <Link to="/create-bpmn">
+                <button onClick={handleClick} className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded shadow-md mb-6">
+                    Créer un nouveau processus
+                </button>
+            </Link>
+
         <div className="bg-white shadow-md rounded-lg p-6">
             <h1 className="text-2xl font-bold mb-4">BPMN Files</h1>
             <div className="overflow-x-auto">
@@ -66,6 +79,7 @@ const ListBpmnFiles = () => {
                     </tbody>
                 </table>
             </div>
+        </div>
         </div>
     );
 };

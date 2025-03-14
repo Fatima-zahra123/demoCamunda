@@ -4,9 +4,9 @@ import axios from "axios";
 
 const API_URL = 'http://localhost:8092/api/bpmn-files';
 
-const createBpmnFileFromXml = async (name, description, xmlContent,codeProcess) => {
+const createBpmnFileFromXml = async (name, description, xmlContent,codeProcess,versionIsValid) => {
     const response = await axios.post(`${API_URL}/create2`, null, {
-        params: { name, description, xmlContent,codeProcess }
+        params: { name, description, xmlContent,codeProcess,versionIsValid }
     });
     return response.data;
 };
@@ -16,9 +16,9 @@ const getBpmnFiles = async () => {
     return response.data;
 }
 
-const updateBpmnFileFromXml = async (id, name, description, xmlContent) => {
+const updateBpmnFileFromXml = async (id, name, description, xmlContent,versionIsValid) => {
     const response = await axios.put(`${API_URL}/update/${id}`, null, {
-        params: { name, description, xmlContent }
+        params: { name, description, xmlContent ,versionIsValid}
     });
     return response.data;
 }
@@ -26,6 +26,8 @@ const updateBpmnFileFromXml = async (id, name, description, xmlContent) => {
 const deleteBpmnFile = async (id) => {
     await axios.delete(`${API_URL}/delete/${id}`);
 }
+
+
 export {
     createBpmnFileFromXml,
     getBpmnFiles,

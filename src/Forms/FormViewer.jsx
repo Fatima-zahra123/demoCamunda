@@ -11,6 +11,7 @@ const FormViewer = () => {
 
   useEffect(() => {
     if (location.state) {
+      console.log(location.state)
       setSchema(location.state.schema)
     const form = new Form({
       container: containerRef.current,

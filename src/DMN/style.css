@@ -1,0 +1,8 @@
+#propertiesPanel > div:first-of-type {
+    display: none;
+}
+
+.dmn-decision-table-container
+{
+    z-index: 100;
+}
