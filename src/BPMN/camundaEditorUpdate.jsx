@@ -16,6 +16,7 @@ import minimapModule from 'diagram-js-minimap';
 import {useLocation} from "react-router-dom";
 import {updateBpmnFileFromXml, getBpmnById, deploy} from "../service/bpmnService.jsx";
 import FormPropertiesProvider from "../FormPropertiesProvider.js";
+import {getFormsByCode} from "../service/formsService.jsx";
 
 
 const CamundaEditorUpdate = () => {
@@ -31,6 +32,7 @@ const CamundaEditorUpdate = () => {
 
     useEffect(()=>
     {
+
         const fetchBpmnById=async () => {
             try {
                 const response = await getBpmnById(id); // Assurez-vous que getFormById() retourne une promesse
@@ -54,6 +56,7 @@ const CamundaEditorUpdate = () => {
 
 
         fetchBpmnById().then(async (response) => {
+            getFormsByCode(response.codeProcess).then(r=>localStorage.setItem("Forms",JSON.stringify(r)));
             await modelerRef.current.importXML(response.content);
             setData(response)
         })
