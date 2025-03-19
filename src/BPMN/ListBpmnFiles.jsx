@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { getBpmnFiles, deleteBpmnFile } from '../service/bpmnService.jsx';
+import {getBpmnFiles, deleteBpmnFile, deploy} from '../service/bpmnService.jsx';
 import {Link, useNavigate} from "react-router-dom";
 
 
@@ -31,11 +31,16 @@ const ListBpmnFiles = () => {
     };
 
     const handleEdit = (file) => {
-        navigate('/camunda-editor', { state: { info: file } });
+        navigate('/bpmn-edit', { state: { id: file.id } });
     };
 
     function handleClick() {
         localStorage.clear();
+    }
+
+    function handleDeploy(id) {
+
+            deploy(id).then(r => console.log("deployed successfully",r)).catch(err=>console.log(err));
     }
 
     return (
@@ -73,6 +78,8 @@ const ListBpmnFiles = () => {
                             <td className="py-2 px-4 border-b">
                                 <button className="bg-blue-500 hover:bg-blue-600 text-white py-1 px-2 rounded mr-2" onClick={() => handleEdit(file)}>Edit</button>
                                 <button className="bg-red-500 hover:bg-red-600 text-white py-1 px-2 rounded" onClick={() => handleDelete(file.id)}>Delete</button>
+                                <button className="bg-green-500 hover:bg-green-600 text-white py-1 px-2 rounded" onClick={() => handleDeploy(file.id)}>Deploy</button>
+
                             </td>
                         </tr>
                     ))}

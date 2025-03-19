@@ -32,10 +32,26 @@ const getFormById = async (id) => {
     const response = await axios.get(`${API_FORMS_URL}/getform/${id}`);
     return response.data;
 }
+
+const deploy=async (formId) => {
+    const response = await axios.post(`${API_FORMS_URL}/deploy/${formId}`, {
+
+
+    });
+    return response.data;
+}
+
+const getFormsByCode = async (code) => {
+    const response = await axios.get(`${API_FORMS_URL}/getByCode/${code}`);
+    return response.data;
+}
+
 export {
     createForm,
     getFormFiles,
     deleteFormFile,
     updateFormFile,
-    getFormById
+    getFormById,
+    deploy,
+    getFormsByCode
 }

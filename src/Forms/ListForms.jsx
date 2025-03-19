@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { getBpmnFiles, deleteBpmnFile } from '../service/bpmnService.jsx';
 import {Link, useNavigate} from "react-router-dom";
-import {deleteFormFile, getFormFiles} from "../service/formsService.jsx";
+import {deleteFormFile, deploy, getFormFiles} from "../service/formsService.jsx";
 import { format } from "date-fns";
 
 
@@ -60,6 +60,11 @@ const ListForms = () => {
     }
 
 
+    function handleDeploy(id) {
+        console.log(id)
+        deploy(id).then(r=>console.log("deploy",r));
+    }
+
     return (
         <div className="p-4">
             <Link to="/create-form">
@@ -97,6 +102,7 @@ const ListForms = () => {
                                     <button className="bg-blue-500 hover:bg-blue-600 text-white py-1 px-2 rounded mr-2" onClick={() => handleEdit(file)}>Edit</button>
                                     <button className="bg-red-500 hover:bg-red-600 text-white py-1 px-2 rounded mr-2" onClick={() => handleDelete(file.id)}>Delete</button>
                                     <button className="bg-gray-500 hover:bg-gray-600 text-white py-1 px-2 rounded  " onClick={() => handleView(file)}>Preview</button>
+                                    <button className="bg-green-500 hover:bg-green-600 text-white py-1 px-2 rounded  " onClick={() => handleDeploy(file.id)}>Deploy</button>
                                 </td>
                             </tr>
                         ))}

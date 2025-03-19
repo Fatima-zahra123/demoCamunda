@@ -34,10 +34,22 @@ const updateDmn = async (id,dmnContent) => {
     });
     return response.data;
 };
+
+
+const deploy=async (dmnId,dmnContent) => {
+    const response = await axios.post(`${API_DMNS_URL}/deploy`, {
+       dmnId: dmnId,
+        dmnContent: dmnContent
+
+
+    });
+    return response.data;
+}
 export {
    getDmnFiles,
     deleteDmnFile,
     getDmnById,
     createDmn,
-    updateDmn
+    updateDmn,
+    deploy
 }

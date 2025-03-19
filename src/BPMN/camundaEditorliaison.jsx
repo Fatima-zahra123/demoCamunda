@@ -4,7 +4,7 @@ import 'camunda-bpmn-js/dist/assets/camunda-platform-modeler.css';
 import 'diagram-js-minimap/assets/diagram-js-minimap.css';
 import 'bpmn-js/dist/assets/diagram-js.css';
 import camundaPlatformBehaviors from 'camunda-bpmn-js-behaviors/lib/camunda-platform';
-
+import './style.css'
 import {
     BpmnPropertiesPanelModule,
     BpmnPropertiesProviderModule,
@@ -16,8 +16,8 @@ import minimapModule from 'diagram-js-minimap';
 import {useLocation, useNavigate} from "react-router-dom";
 import {createBpmnFileFromXml, updateBpmnFileFromXml} from "../service/bpmnService.jsx";
 import {deploy} from "../service/bpmnService.jsx";
+import MagicPropertiesProvider from '../MagicPropertiesProvider.js';
 import FormPropertiesProvider from "../FormPropertiesProvider.js";
-import {getFormsByCode} from "../service/formsService.jsx";
 
 const CamundaEditor = () => {
     const containerRef = useRef(null);
@@ -32,7 +32,7 @@ const CamundaEditor = () => {
     const { info } = location.state || {};
     const savedXml = localStorage.getItem("bpmnXml"); // Récupérer le XML BPMN stocké
     const xml = info ? info.content : savedXml;
-    const processName = storedFormData.process || "defaultName";
+    const processName = storedFormData.name || "defaultName";
     const sanitizedProcessName = processName.replace(/[^a-zA-Z0-9._-]/g, '_'); // Nettoyer le nom
 
     const [isCreated, setIsCreated] = useState(() => {
@@ -47,17 +47,20 @@ const CamundaEditor = () => {
 
 
     useEffect(() => {
-        getFormsByCode(storedFormData.code).then(r=>localStorage.setItem("Forms",JSON.stringify(r)));
         modelerRef.current = new BpmnModeler({
             container: containerRef.current,
+            propertiesPanel: {parent: propertiesPanelRef.current},
             additionalModules: [{
+                __init__: [ 'magicPropertiesProvider'],
+                magicPropertiesProvider: [ 'type', MagicPropertiesProvider ]
+            },{
                 __init__: [ 'formPropertiesProvider'],
                 formPropertiesProvider: [ 'type', FormPropertiesProvider ]
-            },
-                minimapModule,BpmnPropertiesPanelModule, BpmnPropertiesProviderModule,CamundaPlatformPropertiesProviderModule,CamundaPlatformTooltipProvider,camundaPlatformBehaviors],
-            propertiesPanel: { parent: propertiesPanelRef.current },
+            }],
             moddleExtensions: { camunda: camundaModdleDescriptor,
                 magic: magicModdleDescriptor},
+
+
         });
 
         const importXml = async () => {
@@ -79,7 +82,7 @@ const CamundaEditor = () => {
             const elementRegistry = modelerRef.current.get('elementRegistry');
             const modeling = modelerRef.current.get('modeling');
             const processElement = elementRegistry.get('Process_1'); // Adjust the ID as needed
-            // console.log(elementRegistry)
+            console.log(elementRegistry)
             if (processElement) {
                 modeling.updateProperties(processElement, {
                     'camunda:historyTimeToLive': 180,
@@ -125,7 +128,7 @@ const CamundaEditor = () => {
 
         try {
             const { xml } = await modelerRef.current.saveXML({ format: true });
-
+            console.log(xml)
             const name = storedFormData.name;
             const description = storedFormData.description;
             const code = storedFormData.code;

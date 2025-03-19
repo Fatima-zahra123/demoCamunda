@@ -1,4 +1,4 @@
-import  { useEffect, useRef, useState} from 'react';
+import { useEffect, useRef, useState} from 'react';
 import BpmnModeler from 'camunda-bpmn-js/lib/camunda-platform/Modeler';
 import 'camunda-bpmn-js/dist/assets/camunda-platform-modeler.css';
 import 'diagram-js-minimap/assets/diagram-js-minimap.css';
@@ -13,41 +13,33 @@ import {
 import magicModdleDescriptor from "../descriptors/magic.json";
 import camundaModdleDescriptor from "camunda-bpmn-moddle/resources/camunda.json";
 import minimapModule from 'diagram-js-minimap';
-import {useLocation, useNavigate} from "react-router-dom";
-import {createBpmnFileFromXml, updateBpmnFileFromXml} from "../service/bpmnService.jsx";
-import {deploy} from "../service/bpmnService.jsx";
+import {useLocation} from "react-router-dom";
+import {updateBpmnFileFromXml, getBpmnById, deploy} from "../service/bpmnService.jsx";
 import FormPropertiesProvider from "../FormPropertiesProvider.js";
-import {getFormsByCode} from "../service/formsService.jsx";
 
-const CamundaEditor = () => {
+
+const CamundaEditorUpdate = () => {
     const containerRef = useRef(null);
     const modelerRef = useRef(null);
     const propertiesPanelRef = useRef(null);
 
-    // 🔹 Charger formData depuis localStorage
-    const storedFormData = JSON.parse(localStorage.getItem("formData")) || {};
-
-    // 🔹 Utiliser formData pour définir les valeurs par défaut
     const location = useLocation();
-    const { info } = location.state || {};
-    const savedXml = localStorage.getItem("bpmnXml"); // Récupérer le XML BPMN stocké
-    const xml = info ? info.content : savedXml;
-    const processName = storedFormData.process || "defaultName";
-    const sanitizedProcessName = processName.replace(/[^a-zA-Z0-9._-]/g, '_'); // Nettoyer le nom
-
-    const [isCreated, setIsCreated] = useState(() => {
-        return JSON.parse(localStorage.getItem("isCreated")) || false;});
-    const [bpmnFileId, setBpmnFileId] = useState(() => {
-        return JSON.parse(localStorage.getItem("BpmnId")) || null;});
+    const { id } = location.state || null;
+    const [data,setData]=useState({})
+    const [isValid,setIsValid]=useState(false);
 
 
-    const [isValid, setisValid] = useState(false);
+    useEffect(()=>
+    {
+        const fetchBpmnById=async () => {
+            try {
+                const response = await getBpmnById(id); // Assurez-vous que getFormById() retourne une promesse
+                return response;
+            } catch (err) {
+                console.error("Erreur lors de la récupération des données du formulaire:", err);
+            }
+        };
 
-    const navigate=useNavigate();
-
-
-    useEffect(() => {
-        getFormsByCode(storedFormData.code).then(r=>localStorage.setItem("Forms",JSON.stringify(r)));
         modelerRef.current = new BpmnModeler({
             container: containerRef.current,
             additionalModules: [{
@@ -60,44 +52,17 @@ const CamundaEditor = () => {
                 magic: magicModdleDescriptor},
         });
 
-        const importXml = async () => {
-            try {
-                if (xml) {
-                    await modelerRef.current.importXML(xml);
-                } else {
-                    await modelerRef.current.createDiagram();
-                    setTTL();
-                }
 
-                // 🔹 Écouter les modifications du diagramme
-
-            } catch (err) {
-            }
-        };
-
-        const setTTL = () => {
-            const elementRegistry = modelerRef.current.get('elementRegistry');
-            const modeling = modelerRef.current.get('modeling');
-            const processElement = elementRegistry.get('Process_1'); // Adjust the ID as needed
-            // console.log(elementRegistry)
-            if (processElement) {
-                modeling.updateProperties(processElement, {
-                    'camunda:historyTimeToLive': 180,
-                    'isExecutable': true,
-                    'name': processName,
-                    'id': sanitizedProcessName
-                });
-            }
-        };
-
-
-
-        importXml();
+        fetchBpmnById().then(async (response) => {
+            await modelerRef.current.importXML(response.content);
+            setData(response)
+        })
 
         return () => {
             modelerRef.current.destroy();
         };
-    }, [xml]);
+
+    },[])
 
 
 
@@ -124,26 +89,11 @@ const CamundaEditor = () => {
     const handleSave = async () => {
 
         try {
+            console.log(data.id)
             const { xml } = await modelerRef.current.saveXML({ format: true });
-
-            const name = storedFormData.name;
-            const description = storedFormData.description;
-            const code = storedFormData.code;
-            if (!isCreated) {
-                const response = await createBpmnFileFromXml(name, description, xml,code,isValid);
-                localStorage.setItem("bpmnXml", xml);
-                localStorage.setItem("isCreated", true);
-                localStorage.setItem("BpmnId", response.id);
-                console.log('BPMN File created:', response);
-                setIsCreated(true);
-                setBpmnFileId(response.id); // Store the created BPMN file ID
-                return response;
-            } else {
-                const response = await updateBpmnFileFromXml(bpmnFileId, name, xml,isValid);
-                console.log('BPMN File updated:', response);
-                localStorage.setItem("bpmnXml", xml);
-                return response;
-            }
+            const response = await updateBpmnFileFromXml(data.id,data.name,xml,isValid);
+            console.log('BPMN File updated:', response,isValid);
+            return response;
         } catch (error) {
             console.error("Erreur lors de l'enregistrement", error);
         }
@@ -158,9 +108,8 @@ const CamundaEditor = () => {
             });
         }
     }, [isValid]);
-
     const handleValidate = async () => {
-        setisValid(true);
+        setIsValid(true);
 
     };
 
@@ -179,12 +128,12 @@ const CamundaEditor = () => {
                 >
                     Valider
                 </button>
-                <button
-                    onClick={()=>{navigate(-1);}}
-                    className="bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded mb-2"
-                >
-                    Retour
-                </button>
+                {/*<button*/}
+                {/*    onClick={()=>{navigate(-1);}}*/}
+                {/*    className="bg-gray-500 hover:bg-gray-600 text-white py-2 px-4 rounded mb-2"*/}
+                {/*>*/}
+                {/*    Retour*/}
+                {/*</button>*/}
 
             </div>
             <div style={{ display: "flex", flex: 1 }}>
@@ -214,4 +163,4 @@ const CamundaEditor = () => {
     );
 };
 
-export default CamundaEditor;
+export default CamundaEditorUpdate;
