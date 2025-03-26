@@ -16,9 +16,9 @@ const getBpmnFiles = async () => {
     return response.data;
 }
 
-const updateBpmnFileFromXml = async (id, name, xmlContent,versionIsValid) => {
+const updateBpmnFileFromXml = async (id,xmlContent,versionIsValid) => {
     const response = await axios.put(`${API_URL}/update/${id}`, null, {
-        params: { name, xmlContent ,versionIsValid}
+        params: { xmlContent ,versionIsValid}
     });
     return response.data;
 }

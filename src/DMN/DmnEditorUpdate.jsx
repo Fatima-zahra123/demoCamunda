@@ -23,9 +23,7 @@ const DmnEditorUpdate = () => {
 
         const fetchFormData = async () => {
             try {
-                const response = await getDmnById(id); // Assurez-vous que getFormById() retourne une promesse
-                const dmnData = JSON.parse(response.dmnContent);
-                setDiagram(dmnData);
+                const response = await getDmnById(id);
                 return response;
             } catch (err) {
                 console.error("Erreur lors de la récupération des données du formulaire:", err);
@@ -45,8 +43,8 @@ const DmnEditorUpdate = () => {
                 additionalModules:[DmnPropertiesProviderModule,DmnPropertiesPanelModule,CamundaPropertiesProviderModule]
             });
 
-            fetchFormData().then(r=>{
-                modelerRef.current.importXML(JSON.parse(r.dmnContent)).then(() => {
+            fetchFormData().then(response=>{
+                modelerRef.current.importXML(response.dmnContent).then(() => {
                     console.log("Schema imported successfully");
                 }).catch(err => {
                     console.error("Error importing schema", err);
@@ -64,7 +62,7 @@ const DmnEditorUpdate = () => {
     async function handleSave() {
         const {xml} = await modelerRef.current.saveXML({format: true});
         localStorage.setItem("dmnXml", JSON.stringify(xml));
-        await updateDmn(id, JSON.stringify(xml));
+        await updateDmn(id, xml);
 
     }
 

@@ -26,9 +26,13 @@ const DmnEditor = () => {
             else{
                 return `<?xml version="1.0" encoding="UTF-8"?>
 <definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:dc="http://www.omg.org/spec/DMN/20180521/DC/" id="${processedId}" name="${storedFormData.name}" namespace="http://camunda.org/schema/1.0/dmn">
- 
+
 </definitions>
-`}
+`
+//         return `<?xml version="1.0" encoding="UTF-8"?><definitions xmlns="https://www.omg.org/spec/DMN/20191111/MODEL/" xmlns:dmndi="https://www.omg.org/spec/DMN/20191111/DMNDI/" xmlns:modeler="http://camunda.org/schema/modeler/1.0" id="Definitions_0oqlmkc" name="DRD" namespace="http://camunda.org/schema/1.0/dmn" exporter="Camunda Modeler" exporterVersion="5.31.0" modeler:executionPlatform="Camunda Platform" modeler:executionPlatformVersion="7.22.0"><dmndi:DMNDI><dmndi:DMNDiagram /></dmndi:DMNDI></definitions>`    ;
+
+
+            }
     }
         );
 
@@ -75,7 +79,7 @@ const DmnEditor = () => {
             const {xml} = await modelerRef.current.saveXML({format: true});
             if(!JSON.parse(localStorage.getItem("dmnXml")))
             {
-                const response=await createDmn(processedId, storedFormData.name, JSON.stringify(xml), storedFormData.code);
+                const response=await createDmn(processedId, storedFormData.name, xml, storedFormData.code);
                 localStorage.setItem("dmnId", JSON.stringify(response.id));
                 setId(response.id)
                 setDiagram(xml)
@@ -83,7 +87,7 @@ const DmnEditor = () => {
             }
             else {
                 localStorage.setItem("dmnXml", JSON.stringify(xml));
-                await updateDmn(id,JSON.stringify(xml))
+                await updateDmn(id,xml)
             }
 
         } catch (error) {

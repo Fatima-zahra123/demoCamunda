@@ -31,6 +31,7 @@ const ListBpmnFiles = () => {
     };
 
     const handleEdit = (file) => {
+        localStorage.clear();
         navigate('/bpmn-edit', { state: { id: file.id } });
     };
 
@@ -77,7 +78,7 @@ const ListBpmnFiles = () => {
                             <td className="py-2 px-4 border-b">{new Date(file.createdAt).toLocaleString()}</td>
                             <td className="py-2 px-4 border-b">
                                 <button className="bg-blue-500 hover:bg-blue-600 text-white py-1 px-2 rounded mr-2" onClick={() => handleEdit(file)}>Edit</button>
-                                <button className="bg-red-500 hover:bg-red-600 text-white py-1 px-2 rounded" onClick={() => handleDelete(file.id)}>Delete</button>
+                                <button className="bg-red-500 hover:bg-red-600 text-white py-1 px-2 rounded mr-2" onClick={() => handleDelete(file.id)}>Delete</button>
                                 <button className="bg-green-500 hover:bg-green-600 text-white py-1 px-2 rounded" onClick={() => handleDeploy(file.id)}>Deploy</button>
 
                             </td>

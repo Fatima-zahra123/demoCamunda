@@ -36,12 +36,21 @@ const updateDmn = async (id,dmnContent) => {
 };
 
 
-const deploy=async (dmnId,dmnContent) => {
-    const response = await axios.post(`${API_DMNS_URL}/deploy`, {
-       dmnId: dmnId,
-        dmnContent: dmnContent
+// const deploy=async (dmnId,dmnContent) => {
+//     const response = await axios.post(`${API_DMNS_URL}/deploy`, {
+//        dmnId: dmnId,
+//         dmnContent: dmnContent
+//
+//
+//     });
+//     return response.data;
+// }
 
-
+const deploy=async (id) => {
+    const response = await axios.post(`${API_DMNS_URL}/deploy-dmn`, null,{
+        params:{
+            id:id
+        }
     });
     return response.data;
 }

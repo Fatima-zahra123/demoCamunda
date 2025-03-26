@@ -6,55 +6,51 @@ import {getFormsByCode} from "../service/formsService.jsx";
 export default function(element) {
     return [
         {
-            id: 'formRef',
+            id: 'decisionRef',
             element,
-            component: FormRef1,
+            component: DmnRef,
             isEdited: isSelectEntryEdited
         }
     ];
 }
 
-function FormRef1(props) {
+function DmnRef(props) {
     const { element, id } = props;
 
     const modeling = useService('modeling');
     const translate = useService('translate');
     const debounce = useService('debounceInput');
 
+    // const [options, setOptions] = useState([]);  // Ajouter un état pour les options
 
     const getValue = () => {
-        return element.businessObject.formRef || '';
+        return element.businessObject.decisionRef || '';
     }
 
     const setValue = value => {
-
-        if (value === '')
-        {
+        if (value === "none") {
             return modeling.updateProperties(element, {
-                formRef: undefined,
-                formRefBinding: undefined
-            });
-        }
-        else {
+            decisionRef: ''
+        });}
+          else{
             return modeling.updateProperties(element, {
-                formRef: value,
-                formRefBinding: "latest"
+                decisionRef: value,
             });
         }
 
     }
 
 
-    const getOptions = () => {
+    const getOptions = async () => {
         let options = [
             {
-                value: '',
-                label: translate('<none>')// Option par défaut
+                value: 'none',
+                label: translate('none') // Option par défaut
             }
         ];
 
         // Récupérer les données depuis le localStorage
-        const storedForms = localStorage.getItem("Forms");
+        const storedForms = localStorage.getItem("Dmns");
 
         // Vérifie si les données existent et sont bien un tableau
         if (storedForms) {
@@ -88,7 +84,7 @@ function FormRef1(props) {
             id=${id} 
             element=${element} 
             description=${translate('')} 
-            label=${translate('FormRef')} 
+            label=${translate('DmnRef')} 
             getValue=${getValue} 
             setValue=${setValue} 
             getOptions=${getOptions}  // Passer les options récupérées

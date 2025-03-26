@@ -56,7 +56,7 @@ const CamundaEditor = () => {
             },{
                 __init__: [ 'formPropertiesProvider'],
                 formPropertiesProvider: [ 'type', FormPropertiesProvider ]
-            }],
+            },CamundaPlatformPropertiesProviderModule],
             moddleExtensions: { camunda: camundaModdleDescriptor,
                 magic: magicModdleDescriptor},
 

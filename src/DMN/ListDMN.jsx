@@ -1,7 +1,7 @@
 import  { useEffect, useState } from 'react';
 import {Link, useNavigate} from "react-router-dom";
 import { format } from "date-fns";
-import {deleteDmnFile, getDmnFiles} from "../service/dmnService.jsx";
+import {deleteDmnFile, deploy, getDmnFiles} from "../service/dmnService.jsx";
 
 
 const ListDMN = () => {
@@ -93,6 +93,7 @@ const ListDMN = () => {
                                 <td className="py-2 px-4 border-b">
                                     <button className="bg-blue-500 hover:bg-blue-600 text-white py-1 px-2 rounded mr-2" onClick={() => handleEdit(file)}>Edit</button>
                                     <button className="bg-red-500 hover:bg-red-600 text-white py-1 px-2 rounded mr-2" onClick={() => handleDelete(file.id)}>Delete</button>
+                                    <button className="bg-green-500 hover:bg-green-600 text-white py-1 px-2 rounded mr-2" onClick={() => deploy(file.id)}>Deploy</button>
                                 </td>
                             </tr>
                         ))}

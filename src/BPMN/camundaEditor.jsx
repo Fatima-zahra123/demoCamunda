@@ -1,23 +1,25 @@
-import  { useEffect, useRef, useState} from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 import BpmnModeler from 'camunda-bpmn-js/lib/camunda-platform/Modeler';
 import 'camunda-bpmn-js/dist/assets/camunda-platform-modeler.css';
 import 'diagram-js-minimap/assets/diagram-js-minimap.css';
 import 'bpmn-js/dist/assets/diagram-js.css';
 import camundaPlatformBehaviors from 'camunda-bpmn-js-behaviors/lib/camunda-platform';
-
+import './style.css'
 import {
     BpmnPropertiesPanelModule,
     BpmnPropertiesProviderModule,
     CamundaPlatformPropertiesProviderModule, CamundaPlatformTooltipProvider
 } from "bpmn-js-properties-panel";
-import magicModdleDescriptor from "../descriptors/magic.json";
 import camundaModdleDescriptor from "camunda-bpmn-moddle/resources/camunda.json";
 import minimapModule from 'diagram-js-minimap';
-import {useLocation, useNavigate} from "react-router-dom";
-import {createBpmnFileFromXml, updateBpmnFileFromXml} from "../service/bpmnService.jsx";
+import {useNavigate, unstable_usePrompt, useBeforeUnload, useLocation} from "react-router-dom";
+import {createBpmnFileFromXml, getBpmnById, updateBpmnFileFromXml} from "../service/bpmnService.jsx";
 import {deploy} from "../service/bpmnService.jsx";
 import FormPropertiesProvider from "../FormPropertiesProvider.js";
 import {getFormsByCode} from "../service/formsService.jsx";
+import ConfirmationPopup from "./ConfirmationGroup.jsx";
+import { debounce } from 'lodash';
+import usePrompt from "./usePrompt.jsx";
 
 const CamundaEditor = () => {
     const containerRef = useRef(null);
@@ -27,14 +29,8 @@ const CamundaEditor = () => {
     // 🔹 Charger formData depuis localStorage
     const storedFormData = JSON.parse(localStorage.getItem("formData")) || {};
 
-    // 🔹 Utiliser formData pour définir les valeurs par défaut
-    const location = useLocation();
-    const { info } = location.state || {};
-    const savedXml = localStorage.getItem("bpmnXml"); // Récupérer le XML BPMN stocké
-    const xml = info ? info.content : savedXml;
-    const processName = storedFormData.process || "defaultName";
-    const sanitizedProcessName = processName.replace(/[^a-zA-Z0-9._-]/g, '_'); // Nettoyer le nom
-
+    const [xmlBpmn,setXmlBpmn]=useState(() => {
+        return localStorage.getItem("bpmnXml") || null;});
     const [isCreated, setIsCreated] = useState(() => {
         return JSON.parse(localStorage.getItem("isCreated")) || false;});
     const [bpmnFileId, setBpmnFileId] = useState(() => {
@@ -45,6 +41,9 @@ const CamundaEditor = () => {
 
     const navigate=useNavigate();
 
+    const [isPopupVisible, setIsPopupVisible] = useState(false); // State for popup visibility
+    const [popupAction, setPopupAction] = useState(null); // State to determine the action to perform
+    const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
 
     useEffect(() => {
         getFormsByCode(storedFormData.code).then(r=>localStorage.setItem("Forms",JSON.stringify(r)));
@@ -53,17 +52,18 @@ const CamundaEditor = () => {
             additionalModules: [{
                 __init__: [ 'formPropertiesProvider'],
                 formPropertiesProvider: [ 'type', FormPropertiesProvider ]
-            },
+            }
+                ,
                 minimapModule,BpmnPropertiesPanelModule, BpmnPropertiesProviderModule,CamundaPlatformPropertiesProviderModule,CamundaPlatformTooltipProvider,camundaPlatformBehaviors],
             propertiesPanel: { parent: propertiesPanelRef.current },
             moddleExtensions: { camunda: camundaModdleDescriptor,
-                magic: magicModdleDescriptor},
+               },
         });
 
         const importXml = async () => {
             try {
-                if (xml) {
-                    await modelerRef.current.importXML(xml);
+                if (xmlBpmn) {
+                    await modelerRef.current.importXML(xmlBpmn);
                 } else {
                     await modelerRef.current.createDiagram();
                     setTTL();
@@ -79,13 +79,12 @@ const CamundaEditor = () => {
             const elementRegistry = modelerRef.current.get('elementRegistry');
             const modeling = modelerRef.current.get('modeling');
             const processElement = elementRegistry.get('Process_1'); // Adjust the ID as needed
-            // console.log(elementRegistry)
             if (processElement) {
                 modeling.updateProperties(processElement, {
                     'camunda:historyTimeToLive': 180,
                     'isExecutable': true,
-                    'name': processName,
-                    'id': sanitizedProcessName
+                    'name': storedFormData.name,
+                    'id': storedFormData.name.replace(/[^a-zA-Z0-9._-]/g, '_')
                 });
             }
         };
@@ -94,11 +93,41 @@ const CamundaEditor = () => {
 
         importXml();
 
+
+
+        const handleElementsChanged = debounce(() => {
+            setHasUnsavedChanges(true);
+            modelerRef.current.saveXML({ format: true }).then(({ xml }) => {
+                localStorage.setItem("bpmnXml", xml);
+            });
+        }, 500); // Attendre 500ms avant de sauvegarder pour éviter les appels trop fréquents
+
+        modelerRef.current.on('elements.changed', handleElementsChanged);
+
         return () => {
+            modelerRef.current.off('elements.changed', handleElementsChanged);
+
             modelerRef.current.destroy();
         };
-    }, [xml]);
+    }, [xmlBpmn]);
 
+
+    useBeforeUnload((event) => {
+        if (hasUnsavedChanges) {
+            event.preventDefault();
+            event.returnValue = '';
+
+            if (!isCreated) {
+                localStorage.removeItem("bpmnXml");
+            }
+            else
+            {
+                getBpmnById(bpmnFileId).then(r=>{localStorage.setItem("bpmnXml",r.content);
+                                setXmlBpmn(r.content);
+                });
+            }
+        }
+    });
 
 
     // Function to reset zoom
@@ -120,39 +149,40 @@ const CamundaEditor = () => {
         const currentZoom = canvas.zoom();
         canvas.zoom(currentZoom - 0.1);
     };
-    // Fonction pour sauvegarder le fichier
-    const handleSave = async () => {
-
+    const handleSaveXml = async () => {
+        setHasUnsavedChanges(false);
         try {
             const { xml } = await modelerRef.current.saveXML({ format: true });
 
-            const name = storedFormData.name;
-            const description = storedFormData.description;
-            const code = storedFormData.code;
             if (!isCreated) {
-                const response = await createBpmnFileFromXml(name, description, xml,code,isValid);
+                const response = await createBpmnFileFromXml(storedFormData.name, storedFormData.description, xml,storedFormData.code,isValid);
                 localStorage.setItem("bpmnXml", xml);
                 localStorage.setItem("isCreated", true);
                 localStorage.setItem("BpmnId", response.id);
-                console.log('BPMN File created:', response);
                 setIsCreated(true);
                 setBpmnFileId(response.id); // Store the created BPMN file ID
+                console.log('BPMN File created:', response);
                 return response;
             } else {
-                const response = await updateBpmnFileFromXml(bpmnFileId, name, xml,isValid);
-                console.log('BPMN File updated:', response);
+                const response = await updateBpmnFileFromXml(bpmnFileId, storedFormData.name, xml,isValid);
                 localStorage.setItem("bpmnXml", xml);
+                console.log('BPMN File updated:', response);
                 return response;
             }
         } catch (error) {
             console.error("Erreur lors de l'enregistrement", error);
         }
+    }
+    // Fonction pour sauvegarder le fichier
+    const handleSave = async () => {
+            showPopup('save');
+
     };
 
     useEffect(() => {
         if (isValid) {
-            handleSave().then((r) => {
-                deploy(r.name, r.content)
+            handleSaveXml().then((r) => {
+                deploy(r.id)
                     .then((r) => console.log(r))
                     .catch((err) => console.log(err));
             });
@@ -160,8 +190,27 @@ const CamundaEditor = () => {
     }, [isValid]);
 
     const handleValidate = async () => {
-        setisValid(true);
+        showPopup('validate');
 
+    };
+
+    const showPopup = (action) => {
+        setPopupAction(action);
+        setIsPopupVisible(true);
+    };
+
+    const handleConfirm = async () => {
+        setIsPopupVisible(false);
+        if (popupAction === 'save') {
+            await handleSaveXml();
+        } else if (popupAction === 'validate') {
+            setisValid(true);
+            console.log("validate");
+        }
+    };
+
+    const handleCancel = () => {
+        setIsPopupVisible(false);
     };
 
     return (
@@ -210,6 +259,14 @@ const CamundaEditor = () => {
                     </div>
                 <div ref={propertiesPanelRef} style={{ flex: 1, border: "1px solid #ccc", padding: "0px", overflow: "auto" }} />
             </div>
+
+            {isPopupVisible && (
+                <ConfirmationPopup
+                    message='Are you sure you want to proceed?'
+                    onConfirm={handleConfirm}
+                    onCancel={handleCancel}
+                />
+            )}
         </div>
     );
 };
